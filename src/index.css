@@ -1,0 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import "tailwindcss";
+
+@theme{
+  --font-inter: "Inter", sans-serif;
+}
+
+body{
+  @apply bg-black font-inter text-white;
+}
+
+.header-bg {
+  background: radial-gradient(
+    circle at 50% -30%, /* center X at 50%, Y at 20% (higher up) */
+    rgba(154, 119, 237, 0.4),
+    rgba(0, 0, 0, 0.95)
+  );
+}
+
+.result-bg {
+  background-image: url('../public/result.png');
+  background-size: cover;
+}
