@@ -2,8 +2,10 @@
 A web app that describes the user based on the user's Spotify.
 
 
+https://github.com/user-attachments/assets/5f730730-3138-41cb-83af-980279363f14
 
-https://github.com/user-attachments/assets/cf5b6e73-9f52-49d9-ae28-d3b25363d875
+
+
 
 
  ## Built with
