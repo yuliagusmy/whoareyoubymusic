@@ -134,8 +134,6 @@ const Result = () => {
                 return []
             }
 
-            console.log('Current session:', currentSession)
-            console.log('Provider token exists:', !!currentSession.provider_token)
 
             const accessToken = currentSession.provider_token
             
@@ -144,8 +142,6 @@ const Result = () => {
                 setError('No Spotify access token found')
                 return []
             }
-
-            console.log('Making Spotify API call for top artists...')
 
             const response = await fetch('https://api.spotify.com/v1/me/top/artists?limit=5&time_range=medium_term', {
                 method: 'GET',
@@ -179,7 +175,6 @@ const Result = () => {
             }
 
             const data = await response.json()
-            console.log('Top artists data:', data)
             return data.items || []
 
         } catch (err) {
@@ -196,7 +191,6 @@ const Result = () => {
             setTracksLoading(true)
             setError(null)
             
-            // Get fresh session data
             const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession()
             
             if (sessionError) {
@@ -219,7 +213,6 @@ const Result = () => {
                 return []
             }
 
-            console.log('Making Spotify API call for top tracks...')
 
             const response = await fetch('https://api.spotify.com/v1/me/top/tracks?limit=5&time_range=short_term', {
                 method: 'GET',
@@ -234,7 +227,7 @@ const Result = () => {
                 console.error('Spotify API error:', response.status, errorText)
                 
                 if (response.status === 429) {
-                    setError('Rate limit exceeded. Please wait a moment and try again.')
+                    setError('Rate limit exceeded.')
                     return []
                 }
                 
@@ -244,7 +237,7 @@ const Result = () => {
                 }
                 
                 if (response.status === 403) {
-                    setError('Insufficient permissions. Please check your Spotify app scopes include "user-top-read".')
+                    setError('Insufficient permissions.')
                     return []
                 }
                 
