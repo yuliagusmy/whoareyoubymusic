@@ -22,6 +22,8 @@ const Result = () => {
     const [topGenres, setTopGenres] = useState([])
     const [topTrackAudioFeatures, setTopTrackAudioFeatures] = useState([])
     const [selectedTimeRange, setSelectedTimeRange] = useState('long_term')
+    const [quickSummary, setQuickSummary] = useState('')
+    const [showDetailedSummary, setShowDetailedSummary] = useState(false)
 
     const navigate = useNavigate()
 
@@ -53,6 +55,7 @@ const Result = () => {
                 Remember, you are giving an in-depth analysis of the person's personality based on their Spotify data.
 
                 # Output
+                First, provide a quick summary of the personality in one sentence, prefixed with "SUMMARY: ". Then, continue with the full description as previously defined.
                 The description of the person. You can joke around, be a little prick by calling them a sad person or something. It's all fun, but it must be accurate and all based from their Spotify data. Make sure the output is a well written paragraph, not fragmented, but don't make it too formal.
 
                 Just dive into the description. Don't start with sentences like "Ah, diving into your Spotify to find out what makes you, you. Let's see what we've got here." or similar ones.
@@ -80,14 +83,23 @@ const Result = () => {
                 Top Songs - Love Me Not by Ravyn Lenar, Starry Eyes by Cigarettes After Sex, Apocalypse by Cigarettes After Sex, Undressed by Sombr, I Wanna be Yours by Arctic Monkeys
 
                 Output:
+                SUMMARY: You're likely a deeply emotional and introspective individual with a rockstar edge, often seeking solace in music.
                 Dawg, hello are you good? Why have you been listening to undressed and i wanna be yours lately. Are you not over someone? Or do you just like that feeling of being hurt? You really need a huzz, man.
 
                 Listening to the Marias and Sombr at the same time is honestly depressing. Call your friends, genuinely. Arctic Monkeys in that list makes you quite the rockstar, though. You're probably a social person that gets exhausted easily based on your music taste. The fact that you listen to Love me not really adds to the fact that you get exhausted easily—you probably are that bed rotten person who only scrolls TikTok and talk energetically when its only the start of the conversation.`
         }})
-        setResponse(response.text)
-    }catch (error) {
+            const fullResponse = response.text;
+            const summaryMatch = fullResponse.match(/^SUMMARY: (.+?)\n/);
+            if (summaryMatch && summaryMatch[1]) {
+                setQuickSummary(summaryMatch[1]);
+                setResponse(fullResponse.replace(/^SUMMARY: (.+?)\n/, '').trim());
+            } else {
+                setQuickSummary('');
+                setResponse(fullResponse);
+            }
+        }catch (error) {
             console.error('Error generating response:', error)
-    }finally{
+        }finally{
         setResponseLoading(false)
     }}
 
@@ -422,21 +434,37 @@ const Result = () => {
     return (
         <div className='header result-bg flex flex-col items-center justify-center min-h-screen p-4 sm:p-8 md:p-10'>
             <div className='max-w-4xl w-full text-center p-6 sm:p-8 md:p-10 bg-gray-900 bg-opacity-80 rounded-lg shadow-2xl border border-gray-700'>
-                <h1 className='font-bold text-2xl mb-6 text-center text-white md:text-3xl'>
+                <h1 className='font-bold text-2xl mb-2 text-center text-white md:text-3xl'>
                     {user?.name || user?.display_name}, here's your result
                 </h1>
+                {quickSummary && (
+                    <p className="text-lg font-semibold text-center mb-6 text-purple-300 md:text-xl">{quickSummary}</p>
+                )}
 
-                <div className="description mb-8 px-4 text-sm text-left space-y-4 min-h-[200px] md:px-10 text-white opacity-90 leading-relaxed">
-                    {responseLoading ? (
-                        <div className="text-center">
-                            <div className="animate-pulse">Generating your description...</div>
-                        </div>
-                    ) : response ? (
-                        displayText.split('\n\n').map((paragraph, index) => (
-                            <p key={index}>{paragraph}</p>
-                        ))
-                    ) : null}
-                </div>
+                {response && (
+                    <div className="flex flex-col items-center justify-center">
+                        <button
+                            onClick={() => setShowDetailedSummary(!showDetailedSummary)}
+                            className="text-sm font-bold border-2 border-purple-500 rounded-full px-4 py-2 text-purple-300 hover:bg-purple-500 hover:text-white transition-colors mb-4"
+                        >
+                            {showDetailedSummary ? 'Hide Full Analysis' : 'Show Full Analysis'}
+                        </button>
+
+                        {showDetailedSummary && (
+                            <div className="description px-4 text-sm text-left space-y-4 min-h-[200px] md:px-10 text-white opacity-90 leading-relaxed">
+                                {responseLoading ? (
+                                    <div className="text-center">
+                                        <div className="animate-pulse">Generating your description...</div>
+                                    </div>
+                                ) : (
+                                    displayText.split('\n\n').map((paragraph, index) => (
+                                        <p key={index}>{paragraph}</p>
+                                    ))
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
@@ -489,6 +517,24 @@ const Result = () => {
                                 ))}
                             </ol>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="w-full max-w-4xl flex flex-col items-center p-6 bg-gray-900 bg-opacity-80 rounded-lg shadow-2xl border border-gray-700 my-8">
+                <h1 className="font-bold text-xl mb-4 text-white">Audio Insights (Average for Top Tracks)</h1>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full text-center text-white opacity-90">
+                    <div className="flex flex-col items-center">
+                        <span className="text-3xl font-bold text-purple-400">{((topTrackAudioFeatures.reduce((sum, f) => sum + f.danceability, 0) / topTrackAudioFeatures.length || 0) * 100).toFixed(0)}%</span>
+                        <span className="text-sm">Danceability</span>
+                    </div>
+                    <div className="flex flex-col items-center">
+                        <span className="text-3xl font-bold text-green-400">{((topTrackAudioFeatures.reduce((sum, f) => sum + f.energy, 0) / topTrackAudioFeatures.length || 0) * 100).toFixed(0)}%</span>
+                        <span className="text-sm">Energy</span>
+                    </div>
+                    <div className="flex flex-col items-center">
+                        <span className="text-3xl font-bold text-blue-400">{((topTrackAudioFeatures.reduce((sum, f) => sum + f.valence, 0) / topTrackAudioFeatures.length || 0) * 100).toFixed(0)}%</span>
+                        <span className="text-sm">Positivity</span>
                     </div>
                 </div>
             </div>
