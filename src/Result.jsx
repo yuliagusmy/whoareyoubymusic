@@ -426,7 +426,7 @@ const Result = () => {
                     {user?.name || user?.display_name}, here's your result
                 </h1>
 
-                <div className="description mb-8 px-4 text-sm text-left space-y-4 md:px-10">
+                <div className="description mb-8 px-4 text-sm text-left space-y-4 min-h-[200px] md:px-10">
                     {responseLoading ? (
                         <div className="text-center">
                             <div className="animate-pulse">Generating your description...</div>
@@ -488,15 +488,18 @@ const Result = () => {
                     </div>
                 </div>
 
-                <select
-                    value={selectedTimeRange}
-                    onChange={(e) => setSelectedTimeRange(e.target.value)}
-                    className="bg-gray-800 bg-opacity-70 text-white p-2 rounded-md mb-4"
-                >
-                    <option value="short_term">Last Month</option>
-                    <option value="medium_term">Last 6 Months</option>
-                    <option value="long_term">All Time</option>
-                </select>
+                <div className="w-full flex justify-center mb-8">
+                    <select
+                        value={selectedTimeRange}
+                        onChange={(e) => setSelectedTimeRange(e.target.value)}
+                        className="bg-gray-800 bg-opacity-70 text-white p-2 rounded-md"
+                    >
+                        <option value="short_term">Last Month</option>
+                        <option value="medium_term">Last 6 Months</option>
+                        <option value="long_term">Last Year</option>
+                        <option value="long_term">All Time</option>
+                    </select>
+                </div>
 
                 <button
                     onClick={LogOut}
