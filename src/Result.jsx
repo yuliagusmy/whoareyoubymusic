@@ -420,13 +420,13 @@ const Result = () => {
 
 
     return (
-        <div className='header result-bg flex flex-col items-center justify-center min-h-screen p-10'>
-            <div className='max-w-4xl text-center'>
-                <h1 className='font-bold text-2xl mb-4 text-center'>
+        <div className='header result-bg flex flex-col items-center justify-center min-h-screen p-4 sm:p-8 md:p-10'>
+            <div className='max-w-4xl w-full text-center p-6 sm:p-8 md:p-10 bg-gray-900 bg-opacity-80 rounded-lg shadow-2xl border border-gray-700'>
+                <h1 className='font-bold text-2xl mb-6 text-center text-white md:text-3xl'>
                     {user?.name || user?.display_name}, here's your result
                 </h1>
 
-                <div className="description mb-8 px-4 text-sm text-left space-y-4 min-h-[200px] md:px-10">
+                <div className="description mb-8 px-4 text-sm text-left space-y-4 min-h-[200px] md:px-10 text-white opacity-90 leading-relaxed">
                     {responseLoading ? (
                         <div className="text-center">
                             <div className="animate-pulse">Generating your description...</div>
@@ -439,71 +439,92 @@ const Result = () => {
                 </div>
             </div>
 
-            <div className="flex flex-col items-start gap-12">
-                <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                    <div className="flex flex-col items-center p-4 bg-gray-800 bg-opacity-50 rounded-lg shadow-lg">
-                        <div className="flex items-start gap-6">
-                            {topArtists[0]?.images?.length > 0 && (
-                                <img
-                                    src={topArtists[0].images[0].url}
-                                    className="w-40 h-40 object-cover"
-                                    alt="Top artist"
-                                />
+            <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
+                <div className="flex flex-col items-center p-6 bg-gray-800 bg-opacity-60 rounded-lg shadow-xl">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 w-full">
+                        {topArtists[0]?.images?.length > 0 && (
+                            <img
+                                src={topArtists[0].images[0].url}
+                                className="w-32 h-32 object-cover rounded-lg shadow-md flex-shrink-0"
+                                alt="Top artist"
+                            />
+                        )}
+                        <div className="w-full">
+                            <h1 className="font-bold text-xl mb-2 text-white">Current Top Artists</h1>
+                            <ol className="text-left text-sm space-y-2 text-white opacity-90">
+                                {topArtists.map((artist, i) => (
+                                    <li key={artist.id || i} className="flex items-baseline">
+                                        <span className="w-6 font-medium">{i + 1}.</span>
+                                        <span>{artist.name}</span>
+                                    </li>
+                                ))}
+                            </ol>
+                            {topGenres.length > 0 && (
+                                <div className="mt-2 text-xs opacity-70">
+                                    <span className="font-bold">Genres:</span> {topGenres.join(', ')}
+                                </div>
                             )}
-                            <div>
-                                <h1 className="font-bold text-xl mb-2">Current Top Artists</h1>
-                                <ol className="text-left text-sm space-y-1">
-                                    {topArtists.map((artist, i) => (
-                                        <li key={artist.id || i} className="flex">
-                                            <span className="w-6 font-medium">{i + 1}.</span>
-                                            <span>{artist.name}</span>
-                                        </li>
-                                    ))}
-                                </ol>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col items-center p-4 bg-gray-800 bg-opacity-50 rounded-lg shadow-lg">
-                        <div className="flex items-start gap-6">
-                            {topTracks[0]?.album?.images?.length > 0 && (
-                                <img
-                                    src={topTracks[0].album.images[0].url}
-                                    className="w-40 h-40 object-cover"
-                                    alt="Top track"
-                                />
-                            )}
-                            <div>
-                                <h1 className="font-bold text-xl mb-2">Current Top Tracks</h1>
-                                <ol className="text-left text-sm space-y-1">
-                                    {topTracks.map((track, i) => (
-                                        <li key={track.id || i} className="flex">
-                                            <span className="w-6 font-medium">{i + 1}.</span>
-                                            <span>{track.name}</span>
-                                        </li>
-                                    ))}
-                                </ol>
-                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="w-full flex justify-center mb-8">
-                    <select
-                        value={selectedTimeRange}
-                        onChange={(e) => setSelectedTimeRange(e.target.value)}
-                        className="bg-gray-800 bg-opacity-70 text-white p-2 rounded-md"
-                    >
-                        <option value="short_term">Last Month</option>
-                        <option value="medium_term">Last 6 Months</option>
-                        <option value="long_term">Last Year</option>
-                        <option value="long_term">All Time</option>
-                    </select>
+                <div className="flex flex-col items-center p-6 bg-gray-800 bg-opacity-60 rounded-lg shadow-xl">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 w-full">
+                        {topTracks[0]?.album?.images?.length > 0 && (
+                            <img
+                                src={topTracks[0].album.images[0].url}
+                                className="w-32 h-32 object-cover rounded-lg shadow-md flex-shrink-0"
+                                alt="Top track"
+                            />
+                        )}
+                        <div className="w-full">
+                            <h1 className="font-bold text-xl mb-2 text-white">Current Top Tracks</h1>
+                            <ol className="text-left text-sm space-y-2 text-white opacity-90">
+                                {topTracks.map((track, i) => (
+                                    <li key={track.id || i} className="flex items-baseline">
+                                        <span className="w-6 font-medium">{i + 1}.</span>
+                                        <span>{track.name}</span>
+                                        {track.album && <span className="ml-2 text-xs opacity-70">({track.album.name})</span>}
+                                    </li>
+                                ))}
+                            </ol>
+                        </div>
+                    </div>
                 </div>
+            </div>
+
+            <div className="w-full flex justify-center mt-4 mb-10">
+                <select
+                    value={selectedTimeRange}
+                    onChange={(e) => setSelectedTimeRange(e.target.value)}
+                    className="bg-gray-800 bg-opacity-70 text-white p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                    <option value="short_term">Last Month</option>
+                    <option value="medium_term">Last 6 Months</option>
+                    <option value="long_term">Last Year</option>
+                    <option value="long_term">All Time</option>
+                </select>
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-4 mt-6">
+                <button
+                    onClick={async () => {
+                        try {
+                            await navigator.clipboard.writeText(window.location.href);
+                            alert('Link copied to clipboard!');
+                        } catch (err) {
+                            console.error('Failed to copy: ', err);
+                            alert('Failed to copy link.');
+                        }
+                    }}
+                    className='text-sm font-bold border-2 border-white rounded-full px-4 py-2 hover:bg-white hover:text-black transition-colors transform hover:scale-105'
+                >
+                    Share My Result
+                </button>
 
                 <button
                     onClick={LogOut}
-                    className='mt-6 text-sm font-bold border-2 border-white rounded-full px-3 py-2 hover:bg-white hover:text-black transition-colors'
+                    className='text-sm font-bold border-2 border-white rounded-full px-4 py-2 hover:bg-white hover:text-black transition-colors transform hover:scale-105'
                 >
                     Log Out
                 </button>
