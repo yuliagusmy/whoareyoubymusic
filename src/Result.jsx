@@ -539,7 +539,6 @@ const Result = () => {
                                     <li key={track.id || i} className="flex items-baseline">
                                         <span className="w-6 font-medium">{i + 1}.</span>
                                         <span>{track.name}</span>
-                                        {track.album && <span className="ml-2 text-xs opacity-70">({track.album.name})</span>}
                                     </li>
                                 ))}
                             </ol>
