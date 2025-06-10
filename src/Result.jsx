@@ -21,7 +21,7 @@ const Result = () => {
     const [dataLoaded, setDataLoaded] = useState(false)
     const [topGenres, setTopGenres] = useState([])
     const [topTrackAudioFeatures, setTopTrackAudioFeatures] = useState([])
-    const [selectedTimeRange, setSelectedTimeRange] = useState('long_term')
+    const [selectedTimeRange, setSelectedTimeRange] = useState('short_term')
     const [quickSummary, setQuickSummary] = useState('')
     const [showDetailedSummary, setShowDetailedSummary] = useState(false)
 
@@ -441,31 +441,17 @@ const Result = () => {
                     <p className="text-lg font-semibold text-center mb-6 text-purple-300 md:text-xl">{quickSummary}</p>
                 )}
 
-                <div className="flex flex-wrap justify-center gap-2 mb-8">
-                    <button
-                        onClick={() => setSelectedTimeRange('short_term')}
-                        className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${selectedTimeRange === 'short_term' ? 'bg-purple-600 text-white' : 'bg-gray-800 bg-opacity-70 text-white hover:bg-gray-700'}`}
+                <div className="w-full flex justify-center mt-4 mb-8">
+                    <select
+                        value={selectedTimeRange}
+                        onChange={(e) => setSelectedTimeRange(e.target.value)}
+                        className="bg-gray-800 bg-opacity-70 text-white p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
                     >
-                        Last Month
-                    </button>
-                    <button
-                        onClick={() => setSelectedTimeRange('medium_term')}
-                        className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${selectedTimeRange === 'medium_term' ? 'bg-purple-600 text-white' : 'bg-gray-800 bg-opacity-70 text-white hover:bg-gray-700'}`}
-                    >
-                        Last 6 Months
-                    </button>
-                    <button
-                        onClick={() => setSelectedTimeRange('long_term')}
-                        className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${selectedTimeRange === 'long_term' ? 'bg-purple-600 text-white' : 'bg-gray-800 bg-opacity-70 text-white hover:bg-gray-700'}`}
-                    >
-                        Last Year
-                    </button>
-                    <button
-                        onClick={() => setSelectedTimeRange('long_term')}
-                        className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${selectedTimeRange === 'long_term' ? 'bg-purple-600 text-white' : 'bg-gray-800 bg-opacity-70 text-white hover:bg-gray-700'}`}
-                    >
-                        All Time
-                    </button>
+                        <option value="short_term">Last Month</option>
+                        <option value="medium_term">Last 6 Months</option>
+                        <option value="long_term">Last Year</option>
+                        <option value="long_term">All Time</option>
+                    </select>
                 </div>
 
                 {response && (
@@ -545,27 +531,26 @@ const Result = () => {
                         </div>
                     </div>
                 </div>
+
+                <div className="flex flex-col items-center p-6 bg-gray-800 bg-opacity-60 rounded-lg shadow-xl">
+                    <h1 className="font-bold text-xl mb-4 text-white">Audio Insights</h1>
+                    <div className="w-full text-left text-sm space-y-2 text-white opacity-90">
+                        <p>Danceability: { (topTrackAudioFeatures.reduce((sum, f) => sum + f.danceability, 0) / topTrackAudioFeatures.length * 100 || 0).toFixed(0) }%</p>
+                        <p>Energy: { (topTrackAudioFeatures.reduce((sum, f) => sum + f.energy, 0) / topTrackAudioFeatures.length * 100 || 0).toFixed(0) }%</p>
+                        <p>Valence: { (topTrackAudioFeatures.reduce((sum, f) => sum + f.valence, 0) / topTrackAudioFeatures.length * 100 || 0).toFixed(0) }%</p>
+                        <p className="text-xs mt-2 opacity-70">Danceability reflects how suitable a track is for dancing. Energy represents intensity and activity. Valence describes the musical positiveness (e.g., happy, cheerful) conveyed by a track.</p>
+                    </div>
+                </div>
             </div>
 
-            <div className="w-full flex justify-center mt-4 mb-10">
-                <select
-                    value={selectedTimeRange}
-                    onChange={(e) => setSelectedTimeRange(e.target.value)}
-                    className="bg-gray-800 bg-opacity-70 text-white p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            <div className="flex flex-wrap justify-center gap-4 mt-6">
+                <button
+                    onClick={LogOut}
+                    className='text-sm font-bold border-2 border-white rounded-full px-4 py-2 hover:bg-white hover:text-black transition-colors transform hover:scale-105'
                 >
-                    <option value="short_term">Last Month</option>
-                    <option value="medium_term">Last 6 Months</option>
-                    <option value="long_term">Last Year</option>
-                    <option value="long_term">All Time</option>
-                </select>
+                    Log Out
+                </button>
             </div>
-
-            <button
-                onClick={LogOut}
-                className='mt-6 text-sm font-bold border-2 border-white rounded-full px-4 py-2 hover:bg-white hover:text-black transition-colors transform hover:scale-105'
-            >
-                Log Out
-            </button>
         </div>
     )
 }
