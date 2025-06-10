@@ -1,9 +1,7 @@
-import React from 'react'
-import { useEffect } from 'react'
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom';
 import { GoogleGenAI } from "@google/genai";
-import supabase from './supabaseClient'
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import supabase from './supabaseClient';
 
 
 const Result = () => {
@@ -38,7 +36,7 @@ const Result = () => {
 
                 # Instructions
                 1. You will be given the user's top artists and top tracks from their Spotify
-                2. Create a description of their personality in a fun gen z/gen alpha way. Example phrases: 
+                2. Create a description of their personality in a fun gen z/gen alpha way. Example phrases:
                 - huzz: girlfriend/boyfriend - find yourself a huzz! (find yourself a partner)
                 - oh who is you: oh who are you
                 - get outta here: get out of here
@@ -47,7 +45,7 @@ const Result = () => {
 
                 # Rules
                 1. Do not use text formatting like bold and italics.
-                2. You don't need to write a particular sentence for each song or artist. However, do analyze the whole personality based on all songs and artists. Keep it a maximum of two paragraphs but each paragraph at least 5 complete sentences. Don't make the paragraphs too short. 
+                2. You don't need to write a particular sentence for each song or artist. However, do analyze the whole personality based on all songs and artists. Keep it a maximum of two paragraphs but each paragraph at least 5 complete sentences. Don't make the paragraphs too short.
                 Remember, you are giving an in-depth analysis of the person's personality based on their Spotify data.
 
                 # Output
@@ -61,7 +59,7 @@ const Result = () => {
 
                 Example 1:
                 One of the inputs: Sombr
-                A part of the output: Why are you listening to Sombr? You're probably sad. Oh, who hurt you. I feel bad. 
+                A part of the output: Why are you listening to Sombr? You're probably sad. Oh, who hurt you. I feel bad.
 
                 Example 2:
                 One of the inputs: Back to Me - The Marias
@@ -72,7 +70,7 @@ const Result = () => {
                 A part of the output: Oh, JPEGMafia is underrated. Are you trying to be cool or something?
 
                 Example 4:
-                Input: 
+                Input:
                 Top Artists - Ravyn Lenae, Arctic Monkeys, Sombr, The Marias, Cigarettes After Sex
 
                 Top Songs - Love Me Not by Ravyn Lenar, Starry Eyes by Cigarettes After Sex, Apocalypse by Cigarettes After Sex, Undressed by Sombr, I Wanna be Yours by Arctic Monkeys
@@ -93,11 +91,11 @@ const Result = () => {
         if (response && !responseLoading) {
             setDisplayText('')
             setIsTyping(true)
-            
+
             const timer = setTimeout(() => {
                 let charIndex = 0
                 const fullText = response
-                
+
                 const typeCharacter = () => {
                     if (charIndex < fullText.length) {
                         setDisplayText(fullText.substring(0, charIndex + 1))
@@ -107,7 +105,7 @@ const Result = () => {
                         setIsTyping(false)
                     }
                 }
-                
+
                 typeCharacter()
             }, 500)
 
@@ -119,15 +117,15 @@ const Result = () => {
         try {
             setArtistsLoading(true)
             setError(null)
-            
+
             const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession()
-            
+
             if (sessionError) {
                 console.error('Session error:', sessionError)
                 setError('Session error')
                 return []
             }
-            
+
             if (!currentSession) {
                 console.error('No session found')
                 setError('No session found')
@@ -136,14 +134,14 @@ const Result = () => {
 
 
             const accessToken = currentSession.provider_token
-            
+
             if (!accessToken) {
                 console.error('No provider_token found in session')
                 setError('No Spotify access token found')
                 return []
             }
 
-            const response = await fetch('https://api.spotify.com/v1/me/top/artists?limit=5&time_range=medium_term', {
+            const response = await fetch('https://api.spotify.com/v1/me/top/artists?limit=5&time_range=long_term', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${accessToken}`,
@@ -154,22 +152,22 @@ const Result = () => {
             if (!response.ok) {
                 const errorText = await response.text()
                 console.error('Spotify API error:', response.status, errorText)
-                
+
                 if (response.status === 429) {
                     setError('Rate limit exceeded. Please wait a moment and try again.')
                     return []
                 }
-                
+
                 if (response.status === 401) {
                     setError('Access token expired. Please log in again.')
                     return []
                 }
-                
+
                 if (response.status === 403) {
                     setError('Insufficient permissions. Please check your Spotify app scopes include "user-top-read".')
                     return []
                 }
-                
+
                 setError(`Spotify API error: ${response.status}`)
                 return []
             }
@@ -190,15 +188,15 @@ const Result = () => {
         try {
             setTracksLoading(true)
             setError(null)
-            
+
             const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession()
-            
+
             if (sessionError) {
                 console.error('Session error:', sessionError)
                 setError('Session error')
                 return []
             }
-            
+
             if (!currentSession) {
                 console.error('No session found')
                 setError('No session found')
@@ -206,7 +204,7 @@ const Result = () => {
             }
 
             const accessToken = currentSession.provider_token
-            
+
             if (!accessToken) {
                 console.error('No provider_token found in session')
                 setError('No Spotify access token found')
@@ -214,7 +212,7 @@ const Result = () => {
             }
 
 
-            const response = await fetch('https://api.spotify.com/v1/me/top/tracks?limit=5&time_range=short_term', {
+            const response = await fetch('https://api.spotify.com/v1/me/top/tracks?limit=5&time_range=long_term', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${accessToken}`,
@@ -225,22 +223,22 @@ const Result = () => {
             if (!response.ok) {
                 const errorText = await response.text()
                 console.error('Spotify API error:', response.status, errorText)
-                
+
                 if (response.status === 429) {
                     setError('Rate limit exceeded.')
                     return []
                 }
-                
+
                 if (response.status === 401) {
                     setError('Access token expired. Please log in again.')
                     return []
                 }
-                
+
                 if (response.status === 403) {
                     setError('Insufficient permissions.')
                     return []
                 }
-                
+
                 setError(`Spotify API error: ${response.status}`)
                 return []
             }
@@ -263,7 +261,7 @@ const Result = () => {
             const { error } = await supabase.auth.signOut()
             if (error) {
                 console.error('Logout error:', error)
-            }   
+            }
 
             navigate('/')
             await supabase.auth.setSession(null)
@@ -271,14 +269,14 @@ const Result = () => {
             console.error('Error during logout:', err)
         }
     }
-    
+
     useEffect(() => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_OUT') {
                 localStorage.clear()
             }
         })
-        
+
         return () => subscription.unsubscribe()
     }, [])
 
@@ -288,14 +286,14 @@ const Result = () => {
         const getSession = async () => {
             try {
                 const { data: { session }, error } = await supabase.auth.getSession()
-                
+
                 if (error) {
                     console.error('Session error:', error)
                     return
                 }
-                
+
                 console.log('Session data:', session)
-                
+
                 if (mounted) {
                     setUser(session?.user?.user_metadata || null)
                     setSession(session)
@@ -362,8 +360,8 @@ const Result = () => {
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
                     <h2 className='text-xl font-bold mb-2'>Analyzing your music taste...</h2>
                     <p className='text-sm opacity-80'>
-                        {loading ? 'Getting your session ready...' : 
-                         artistsLoading || tracksLoading ? 'Fetching your Spotify data...' : 
+                        {loading ? 'Getting your session ready...' :
+                         artistsLoading || tracksLoading ? 'Fetching your Spotify data...' :
                          'Almost done...'}
                     </p>
                 </div>
@@ -396,7 +394,7 @@ const Result = () => {
                 <h1 className='font-bold text-2xl mb-4'>
                     {user?.name || user?.display_name}, here's your result
                 </h1>
-                
+
                 <div className="description mb-8 px-10 text-sm text-left space-y-4">
                     {responseLoading ? (
                         <div className="text-center">
@@ -409,7 +407,7 @@ const Result = () => {
                     ) : null}
                 </div>
             </div>
-            
+
             <div className="flex flex-col items-start gap-12">
                 <div className="flex items-start gap-6">
                     {topArtists[0]?.images?.length > 0 && (
