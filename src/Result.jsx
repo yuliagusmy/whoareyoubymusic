@@ -19,6 +19,9 @@ const Result = () => {
     const [displayText, setDisplayText] = useState('')
     const [isTyping, setIsTyping] = useState(false)
     const [dataLoaded, setDataLoaded] = useState(false)
+    const [topGenres, setTopGenres] = useState([])
+    const [topTrackAudioFeatures, setTopTrackAudioFeatures] = useState([])
+    const [selectedTimeRange, setSelectedTimeRange] = useState('long_term')
 
     const navigate = useNavigate()
 
@@ -29,23 +32,24 @@ const Result = () => {
         try {
             const response = await ai.models.generateContent({
             model: "gemini-2.0-flash",
-            contents: `User's top artists are ${topArtists.map(artist => artist.name).join(', ')} and top tracks are ${topTracks.map(track => track.name + '-' + track.artists[0].name).join(', ')}.`,
+            contents: `User's top artists are ${topArtists.map(artist => artist.name).join(', ')}, with genres like ${[...new Set(topArtists.flatMap(artist => artist.genres))].join(', ')}. Their top tracks are ${topTracks.map(track => track.name + '-' + track.artists[0].name).join(', ')}. The audio features for these tracks include average danceability: ${topTrackAudioFeatures.reduce((sum, f) => sum + f.danceability, 0) / topTrackAudioFeatures.length || 0}, energy: ${topTrackAudioFeatures.reduce((sum, f) => sum + f.energy, 0) / topTrackAudioFeatures.length || 0}, and valence: ${topTrackAudioFeatures.reduce((sum, f) => sum + f.valence, 0) / topTrackAudioFeatures.length || 0}.`,
             config: {
                 systemInstruction: `# Role
-                You are a personality analyzer that uses a person's top artists, top tracks, and top genres to decide what the person is like.
+                You are a personality analyzer that uses a person's top artists, top tracks, top genres, and audio features (danceability, energy, valence) to decide what the person is like.
 
                 # Instructions
-                1. You will be given the user's top artists and top tracks from their Spotify
+                1. You will be given the user's top artists, top tracks, top genres, and average audio features from their Spotify.
                 2. Create a description of their personality in a fun gen z/gen alpha way. Example phrases:
                 - huzz: girlfriend/boyfriend - find yourself a huzz! (find yourself a partner)
                 - oh who is you: oh who are you
                 - get outta here: get out of here
                 - what the hell brother: what in the world
                 You dont need to use all of these phrases, but use them in a way that makes sense. Please research your own phrases, don't always use the ones I provided.
+                3. Incorporate insights from genres and average audio features to give a more nuanced personality analysis. For example, high danceability might suggest an outgoing personality, while low energy might suggest a more introspective one. Focus on interpreting the music data into personality traits.
 
                 # Rules
                 1. Do not use text formatting like bold and italics.
-                2. You don't need to write a particular sentence for each song or artist. However, do analyze the whole personality based on all songs and artists. Keep it a maximum of two paragraphs but each paragraph at least 5 complete sentences. Don't make the paragraphs too short.
+                2. You don't need to write a particular sentence for each song, artist, or genre. However, do analyze the whole personality based on all songs, artists, genres, and audio features. Keep it a maximum of two paragraphs but each paragraph at least 5 complete sentences. Don't make the paragraphs too short.
                 Remember, you are giving an in-depth analysis of the person's personality based on their Spotify data.
 
                 # Output
@@ -141,7 +145,7 @@ const Result = () => {
                 return []
             }
 
-            const response = await fetch('https://api.spotify.com/v1/me/top/artists?limit=5&time_range=long_term', {
+            const response = await fetch(`https://api.spotify.com/v1/me/top/artists?limit=5&time_range=${selectedTimeRange}`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${accessToken}`,
@@ -173,6 +177,8 @@ const Result = () => {
             }
 
             const data = await response.json()
+            const genres = data.items.flatMap(artist => artist.genres);
+            setTopGenres([...new Set(genres)]);
             return data.items || []
 
         } catch (err) {
@@ -212,7 +218,7 @@ const Result = () => {
             }
 
 
-            const response = await fetch('https://api.spotify.com/v1/me/top/tracks?limit=5&time_range=long_term', {
+            const response = await fetch(`https://api.spotify.com/v1/me/top/tracks?limit=5&time_range=${selectedTimeRange}`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${accessToken}`,
@@ -245,6 +251,24 @@ const Result = () => {
 
             const data = await response.json()
             console.log('Top tracks data:', data)
+            const trackIds = data.items.map(track => track.id).join(',');
+            if (trackIds) {
+                const audioFeaturesResponse = await fetch(`https://api.spotify.com/v1/audio-features?ids=${trackIds}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (audioFeaturesResponse.ok) {
+                    const audioFeaturesData = await audioFeaturesResponse.json();
+                    setTopTrackAudioFeatures(audioFeaturesData.audio_features);
+                } else {
+                    console.error('Error fetching audio features:', audioFeaturesResponse.status, await audioFeaturesResponse.text());
+                }
+            }
+
             return data.items || []
 
         } catch (err) {
@@ -327,8 +351,15 @@ const Result = () => {
     }, [])
 
     useEffect(() => {
-        if (!loading && session && session.provider_token && topArtists.length === 0) {
-            console.log('Auto-fetching top artists and tracks...')
+        if (!loading && session && session.provider_token) {
+            console.log(`Auto-fetching top artists and tracks for ${selectedTimeRange}...`)
+            // Clear previous data when time range changes or on initial load
+            setTopArtists([])
+            setTopTracks([])
+            setTopGenres([])
+            setTopTrackAudioFeatures([])
+            setHasFetchedResponse(false)
+
             getTopArtists().then(artists => {
                 setTopArtists(artists)
             })
@@ -336,14 +367,14 @@ const Result = () => {
                 setTopTracks(tracks)
             })
         }
-    }, [loading, session])
+    }, [loading, session, selectedTimeRange])
 
 
     useEffect(() => {
-        if (topArtists.length > 0 && topTracks.length > 0 && !artistsLoading && !tracksLoading) {
+        if (topArtists.length > 0 && topTracks.length > 0 && !artistsLoading && !tracksLoading && !responseLoading) {
             setDataLoaded(true)
         }
-    }, [topArtists, topTracks, artistsLoading, tracksLoading])
+    }, [topArtists, topTracks, artistsLoading, tracksLoading, responseLoading])
 
     useEffect(() => {
         if (!hasFetchedResponse && topArtists.length > 0 && topTracks.length > 0) {
@@ -391,11 +422,11 @@ const Result = () => {
     return (
         <div className='header result-bg flex flex-col items-center justify-center min-h-screen p-10'>
             <div className='max-w-4xl text-center'>
-                <h1 className='font-bold text-2xl mb-4'>
+                <h1 className='font-bold text-2xl mb-4 text-center'>
                     {user?.name || user?.display_name}, here's your result
                 </h1>
 
-                <div className="description mb-8 px-10 text-sm text-left space-y-4">
+                <div className="description mb-8 px-4 text-sm text-left space-y-4 md:px-10">
                     {responseLoading ? (
                         <div className="text-center">
                             <div className="animate-pulse">Generating your description...</div>
@@ -409,47 +440,63 @@ const Result = () => {
             </div>
 
             <div className="flex flex-col items-start gap-12">
-                <div className="flex items-start gap-6">
-                    {topArtists[0]?.images?.length > 0 && (
-                        <img
-                            src={topArtists[0].images[0].url}
-                            className="w-40 h-40 object-cover"
-                            alt="Top artist"
-                        />
-                    )}
-                    <div>
-                        <h1 className="font-bold text-xl mb-2">Current Top Artists</h1>
-                        <ol className="text-left text-sm space-y-1">
-                            {topArtists.map((artist, i) => (
-                                <li key={artist.id || i} className="flex">
-                                    <span className="w-6 font-medium">{i + 1}.</span>
-                                    <span>{artist.name}</span>
-                                </li>
-                            ))}
-                        </ol>
+                <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div className="flex flex-col items-center p-4 bg-gray-800 bg-opacity-50 rounded-lg shadow-lg">
+                        <div className="flex items-start gap-6">
+                            {topArtists[0]?.images?.length > 0 && (
+                                <img
+                                    src={topArtists[0].images[0].url}
+                                    className="w-40 h-40 object-cover"
+                                    alt="Top artist"
+                                />
+                            )}
+                            <div>
+                                <h1 className="font-bold text-xl mb-2">Current Top Artists</h1>
+                                <ol className="text-left text-sm space-y-1">
+                                    {topArtists.map((artist, i) => (
+                                        <li key={artist.id || i} className="flex">
+                                            <span className="w-6 font-medium">{i + 1}.</span>
+                                            <span>{artist.name}</span>
+                                        </li>
+                                    ))}
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col items-center p-4 bg-gray-800 bg-opacity-50 rounded-lg shadow-lg">
+                        <div className="flex items-start gap-6">
+                            {topTracks[0]?.album?.images?.length > 0 && (
+                                <img
+                                    src={topTracks[0].album.images[0].url}
+                                    className="w-40 h-40 object-cover"
+                                    alt="Top track"
+                                />
+                            )}
+                            <div>
+                                <h1 className="font-bold text-xl mb-2">Current Top Tracks</h1>
+                                <ol className="text-left text-sm space-y-1">
+                                    {topTracks.map((track, i) => (
+                                        <li key={track.id || i} className="flex">
+                                            <span className="w-6 font-medium">{i + 1}.</span>
+                                            <span>{track.name}</span>
+                                        </li>
+                                    ))}
+                                </ol>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div className="flex items-start gap-6">
-                    {topTracks[0]?.album?.images?.length > 0 && (
-                        <img
-                            src={topTracks[0].album.images[0].url}
-                            className="w-40 h-40 object-cover"
-                            alt="Top track"
-                        />
-                    )}
-                    <div>
-                        <h1 className="font-bold text-xl mb-2">Current Top Tracks</h1>
-                        <ol className="text-left text-sm space-y-1">
-                            {topTracks.map((track, i) => (
-                                <li key={track.id || i} className="flex">
-                                    <span className="w-6 font-medium">{i + 1}.</span>
-                                    <span>{track.name}</span>
-                                </li>
-                            ))}
-                        </ol>
-                    </div>
-                </div>
+                <select
+                    value={selectedTimeRange}
+                    onChange={(e) => setSelectedTimeRange(e.target.value)}
+                    className="bg-gray-800 bg-opacity-70 text-white p-2 rounded-md mb-4"
+                >
+                    <option value="short_term">Last Month</option>
+                    <option value="medium_term">Last 6 Months</option>
+                    <option value="long_term">All Time</option>
+                </select>
 
                 <button
                     onClick={LogOut}
