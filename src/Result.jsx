@@ -441,6 +441,33 @@ const Result = () => {
                     <p className="text-lg font-semibold text-center mb-6 text-purple-300 md:text-xl">{quickSummary}</p>
                 )}
 
+                <div className="flex flex-wrap justify-center gap-2 mb-8">
+                    <button
+                        onClick={() => setSelectedTimeRange('short_term')}
+                        className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${selectedTimeRange === 'short_term' ? 'bg-purple-600 text-white' : 'bg-gray-800 bg-opacity-70 text-white hover:bg-gray-700'}`}
+                    >
+                        Last Month
+                    </button>
+                    <button
+                        onClick={() => setSelectedTimeRange('medium_term')}
+                        className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${selectedTimeRange === 'medium_term' ? 'bg-purple-600 text-white' : 'bg-gray-800 bg-opacity-70 text-white hover:bg-gray-700'}`}
+                    >
+                        Last 6 Months
+                    </button>
+                    <button
+                        onClick={() => setSelectedTimeRange('long_term')}
+                        className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${selectedTimeRange === 'long_term' ? 'bg-purple-600 text-white' : 'bg-gray-800 bg-opacity-70 text-white hover:bg-gray-700'}`}
+                    >
+                        Last Year
+                    </button>
+                    <button
+                        onClick={() => setSelectedTimeRange('long_term')}
+                        className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${selectedTimeRange === 'long_term' ? 'bg-purple-600 text-white' : 'bg-gray-800 bg-opacity-70 text-white hover:bg-gray-700'}`}
+                    >
+                        All Time
+                    </button>
+                </div>
+
                 {response && (
                     <div className="flex flex-col items-center justify-center">
                         <button
@@ -537,19 +564,6 @@ const Result = () => {
                         <span className="text-sm">Positivity</span>
                     </div>
                 </div>
-            </div>
-
-            <div className="w-full flex justify-center mt-4 mb-10">
-                <select
-                    value={selectedTimeRange}
-                    onChange={(e) => setSelectedTimeRange(e.target.value)}
-                    className="bg-gray-800 bg-opacity-70 text-white p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                    <option value="short_term">Last Month</option>
-                    <option value="medium_term">Last 6 Months</option>
-                    <option value="long_term">Last Year</option>
-                    <option value="long_term">All Time</option>
-                </select>
             </div>
 
             <div className="flex flex-wrap justify-center gap-4 mt-6">
