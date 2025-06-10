@@ -1,12 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
 import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import supabase from './supabaseClient';
 
 
 const Result = () => {
-    const { t, i18n } = useTranslation();
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
     const [session, setSession] = useState(null)
@@ -140,13 +138,13 @@ const Result = () => {
 
             if (sessionError) {
                 console.error('Session error:', sessionError)
-                setError(t('sessionError'))
+                setError('Session error')
                 return []
             }
 
             if (!currentSession) {
                 console.error('No session found')
-                setError(t('noSessionFound'))
+                setError('No session found')
                 return []
             }
 
@@ -155,7 +153,7 @@ const Result = () => {
 
             if (!accessToken) {
                 console.error('No provider_token found in session')
-                setError(t('noSpotifyAccessTokenFound'))
+                setError('No Spotify access token found')
                 return []
             }
 
@@ -172,21 +170,21 @@ const Result = () => {
                 console.error('Spotify API error:', response.status, errorText)
 
                 if (response.status === 429) {
-                    setError(t('rateLimitExceeded'))
+                    setError('Rate limit exceeded. Please wait a moment and try again.')
                     return []
                 }
 
                 if (response.status === 401) {
-                    setError(t('accessTokenExpired'))
+                    setError('Access token expired. Please log in again.')
                     return []
                 }
 
                 if (response.status === 403) {
-                    setError(t('insufficientPermissions'))
+                    setError('Insufficient permissions. Please check your Spotify app scopes include "user-top-read".')
                     return []
                 }
 
-                setError(`${t('spotifyApiError')} ${response.status}`)
+                setError(`Spotify API error: ${response.status}`)
                 return []
             }
 
@@ -197,7 +195,7 @@ const Result = () => {
 
         } catch (err) {
             console.error('Error fetching top artists:', err)
-            setError(t('failedToFetchTopArtists'))
+            setError('Failed to fetch top artists')
             return []
         } finally {
             setArtistsLoading(false)
@@ -213,13 +211,13 @@ const Result = () => {
 
             if (sessionError) {
                 console.error('Session error:', sessionError)
-                setError(t('sessionError'))
+                setError('Session error')
                 return []
             }
 
             if (!currentSession) {
                 console.error('No session found')
-                setError(t('noSessionFound'))
+                setError('No session found')
                 return []
             }
 
@@ -227,7 +225,7 @@ const Result = () => {
 
             if (!accessToken) {
                 console.error('No provider_token found in session')
-                setError(t('noSpotifyAccessTokenFound'))
+                setError('No Spotify access token found')
                 return []
             }
 
@@ -245,21 +243,21 @@ const Result = () => {
                 console.error('Spotify API error:', response.status, errorText)
 
                 if (response.status === 429) {
-                    setError(t('rateLimitExceeded'))
+                    setError('Rate limit exceeded.')
                     return []
                 }
 
                 if (response.status === 401) {
-                    setError(t('accessTokenExpired'))
+                    setError('Access token expired. Please log in again.')
                     return []
                 }
 
                 if (response.status === 403) {
-                    setError(t('insufficientPermissions'))
+                    setError('Insufficient permissions.')
                     return []
                 }
 
-                setError(`${t('spotifyApiError')} ${response.status}`)
+                setError(`Spotify API error: ${response.status}`)
                 return []
             }
 
@@ -287,7 +285,7 @@ const Result = () => {
 
         } catch (err) {
             console.error('Error fetching top tracks:', err)
-            setError(t('failedToFetchTopTracks'))
+            setError('Failed to fetch top tracks')
             return []
         } finally {
             setTracksLoading(false)
@@ -403,11 +401,11 @@ const Result = () => {
             <div className='header result-bg flex flex-col items-center justify-center min-h-screen p-10'>
                 <div className='text-center'>
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-                    <h2 className='text-xl font-bold mb-2'>{t('analyzingYourMusicTaste')}</h2>
+                    <h2 className='text-xl font-bold mb-2'>Analyzing your music taste...</h2>
                     <p className='text-sm opacity-80'>
-                        {loading ? t('gettingYourSessionReady') :
-                         artistsLoading || tracksLoading ? t('fetchingYourSpotifyData') :
-                         t('almostDone')}
+                        {loading ? 'Getting your session ready...' :
+                         artistsLoading || tracksLoading ? 'Fetching your Spotify data...' :
+                         'Almost done...'}
                     </p>
                 </div>
             </div>
@@ -419,13 +417,13 @@ const Result = () => {
         return (
             <div className='header result-bg flex flex-col items-center justify-center min-h-screen p-10'>
                 <div className='text-center'>
-                    <h2 className='text-xl font-bold mb-2'>{t('oopsSomethingWentWrong')}</h2>
+                    <h2 className='text-xl font-bold mb-2'>Oops! Something went wrong</h2>
                     <p className='text-sm mb-4'>{error}</p>
                     <button
                         onClick={LogOut}
                         className='text-sm font-bold border-2 border-white rounded-full px-4 py-2 hover:bg-white hover:text-black transition-colors'
                     >
-                        {t('goBack')}
+                        Go Back
                     </button>
                 </div>
             </div>
@@ -435,23 +433,9 @@ const Result = () => {
 
     return (
         <div className='header result-bg flex flex-col items-center justify-center min-h-screen p-4 sm:p-8 md:p-10'>
-            <div className="absolute top-4 right-4 flex gap-2">
-                <button
-                    onClick={() => i18n.changeLanguage('en')}
-                    className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${i18n.language === 'en' ? 'bg-purple-600 text-white' : 'bg-gray-800 bg-opacity-70 text-white hover:bg-gray-700'}`}
-                >
-                    EN
-                </button>
-                <button
-                    onClick={() => i18n.changeLanguage('id')}
-                    className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${i18n.language === 'id' ? 'bg-purple-600 text-white' : 'bg-gray-800 bg-opacity-70 text-white hover:bg-gray-700'}`}
-                >
-                    ID
-                </button>
-            </div>
             <div className='max-w-4xl w-full text-center p-6 sm:p-8 md:p-10 bg-gray-900 bg-opacity-80 rounded-lg shadow-2xl border border-gray-700'>
                 <h1 className='font-bold text-2xl mb-2 text-center text-white md:text-3xl'>
-                    {user?.name || user?.display_name}{t('heresYourResult')}
+                    {user?.name || user?.display_name}, here's your result
                 </h1>
                 {quickSummary && (
                     <p className="text-lg font-semibold text-center mb-6 text-purple-300 md:text-xl">{quickSummary}</p>
@@ -462,25 +446,25 @@ const Result = () => {
                         onClick={() => setSelectedTimeRange('short_term')}
                         className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${selectedTimeRange === 'short_term' ? 'bg-purple-600 text-white' : 'bg-gray-800 bg-opacity-70 text-white hover:bg-gray-700'}`}
                     >
-                        {t('lastMonth')}
+                        Last Month
                     </button>
                     <button
                         onClick={() => setSelectedTimeRange('medium_term')}
                         className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${selectedTimeRange === 'medium_term' ? 'bg-purple-600 text-white' : 'bg-gray-800 bg-opacity-70 text-white hover:bg-gray-700'}`}
                     >
-                        {t('last6Months')}
+                        Last 6 Months
                     </button>
                     <button
                         onClick={() => setSelectedTimeRange('long_term')}
                         className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${selectedTimeRange === 'long_term' ? 'bg-purple-600 text-white' : 'bg-gray-800 bg-opacity-70 text-white hover:bg-gray-700'}`}
                     >
-                        {t('lastYear')}
+                        Last Year
                     </button>
                     <button
                         onClick={() => setSelectedTimeRange('long_term')}
                         className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${selectedTimeRange === 'long_term' ? 'bg-purple-600 text-white' : 'bg-gray-800 bg-opacity-70 text-white hover:bg-gray-700'}`}
                     >
-                        {t('allTime')}
+                        All Time
                     </button>
                 </div>
 
@@ -490,14 +474,14 @@ const Result = () => {
                             onClick={() => setShowDetailedSummary(!showDetailedSummary)}
                             className="text-sm font-bold border-2 border-purple-500 rounded-full px-4 py-2 text-purple-300 hover:bg-purple-500 hover:text-white transition-colors mb-4"
                         >
-                            {showDetailedSummary ? t('hideFullAnalysis') : t('showFullAnalysis')}
+                            {showDetailedSummary ? 'Hide Full Analysis' : 'Show Full Analysis'}
                         </button>
 
                         {showDetailedSummary && (
                             <div className="description px-4 text-sm text-left space-y-4 min-h-[200px] md:px-10 text-white opacity-90 leading-relaxed">
                                 {responseLoading ? (
                                     <div className="text-center">
-                                        <div className="animate-pulse">{t('generatingYourDescription')}</div>
+                                        <div className="animate-pulse">Generating your description...</div>
                                     </div>
                                 ) : (
                                     displayText.split('\n\n').map((paragraph, index) => (
@@ -521,7 +505,7 @@ const Result = () => {
                             />
                         )}
                         <div className="w-full">
-                            <h1 className="font-bold text-xl mb-2 text-white">{t('currentTopArtists')}</h1>
+                            <h1 className="font-bold text-xl mb-2 text-white">Current Top Artists</h1>
                             <ol className="text-left text-sm space-y-2 text-white opacity-90">
                                 {topArtists.map((artist, i) => (
                                     <li key={artist.id || i} className="flex items-baseline">
@@ -532,7 +516,7 @@ const Result = () => {
                             </ol>
                             {topGenres.length > 0 && (
                                 <div className="mt-2 text-xs opacity-70">
-                                    <span className="font-bold">{t('genres')}:</span> {topGenres.join(', ')}
+                                    <span className="font-bold">Genres:</span> {topGenres.join(', ')}
                                 </div>
                             )}
                         </div>
@@ -549,7 +533,7 @@ const Result = () => {
                             />
                         )}
                         <div className="w-full">
-                            <h1 className="font-bold text-xl mb-2 text-white">{t('currentTopTracks')}</h1>
+                            <h1 className="font-bold text-xl mb-2 text-white">Current Top Tracks</h1>
                             <ol className="text-left text-sm space-y-2 text-white opacity-90">
                                 {topTracks.map((track, i) => (
                                     <li key={track.id || i} className="flex items-baseline">
@@ -563,14 +547,25 @@ const Result = () => {
                 </div>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-4 mt-6">
-                <button
-                    onClick={LogOut}
-                    className='text-sm font-bold border-2 border-white rounded-full px-4 py-2 hover:bg-white hover:text-black transition-colors transform hover:scale-105'
+            <div className="w-full flex justify-center mt-4 mb-10">
+                <select
+                    value={selectedTimeRange}
+                    onChange={(e) => setSelectedTimeRange(e.target.value)}
+                    className="bg-gray-800 bg-opacity-70 text-white p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
-                    {t('logOut')}
-                </button>
+                    <option value="short_term">Last Month</option>
+                    <option value="medium_term">Last 6 Months</option>
+                    <option value="long_term">Last Year</option>
+                    <option value="long_term">All Time</option>
+                </select>
             </div>
+
+            <button
+                onClick={LogOut}
+                className='mt-6 text-sm font-bold border-2 border-white rounded-full px-4 py-2 hover:bg-white hover:text-black transition-colors transform hover:scale-105'
+            >
+                Log Out
+            </button>
         </div>
     )
 }
